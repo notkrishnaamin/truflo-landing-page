@@ -1,0 +1,107 @@
+"use client";
+import Image from "next/image";
+import CustomCursor from "@/components/CustomCursor";
+import { useState } from "react";
+
+export default function Home() {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const handleSubmit = async () => {
+    if (email) {
+      try {
+        setSending(true);
+        setError("");
+        
+        const response = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.details || 'Failed to send email');
+        }
+
+        // Open email client as before
+        const emailBody = encodeURIComponent(
+          `The sender of this email has expressed interest in TruFlo's services. Get in touch with them using their email address to move things along.\n\nSender's email: ${email}`
+        );
+        window.location.href = `mailto:krishna.amin@truflo.ai?subject=Interested%20in%20TruFlo&body=${emailBody}`;
+
+      } catch (error) {
+        console.error('Error:', error);
+        setError(error instanceof Error ? error.message : 'Failed to send email');
+      } finally {
+        setSending(false);
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <CustomCursor />
+      <main className="flex-grow flex items-center">
+        <section className="hero">
+          <div className="content-card">
+            <div className="text-logo-group">
+              <span className="coming-soon-badge">Revenue Intelligence Redefined</span>
+              <h1>Pioneer E-commerce<br />excellence with</h1>
+              <div className="product-logo">
+                <Image 
+                  src="/truflo-logo.svg"
+                  alt="TruFlo Intelligence Logo"
+                  width={700}
+                  height={189}
+                  priority
+                  className="logo-image"
+                />
+              </div>
+              <div className="email-capture">
+                <p className="email-caption">Ready to transform your e-commerce?</p>
+                <div className="email-input-group">
+                  <div className="input-wrapper">
+                    <span className="input-icon">✉️</span>
+                    <input 
+                      type="email" 
+                      placeholder="you@company.com" 
+                      className="email-input-modern"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  <button 
+                    className={`submit-button ${email ? 'ready' : ''}`}
+                    onClick={handleSubmit}
+                  >
+                    {email ? 'Send Email' : "Let's Talk"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="right-metrics">
+            <div className="big-metric">
+              <h2 className="big-number">₹300+ Cr</h2>
+              <p className="big-metric-description">generated in client Gross Merchandise Value</p>
+            </div>
+            <div className="big-metric" style={{ marginTop: '3rem' }}>
+              <h2 className="big-number">15+ Lakh</h2>
+              <p className="big-metric-description">orders placed</p>
+            </div>
+            <div className="big-metric" style={{ marginTop: '3rem' }}>
+              <h2 className="big-number">300% increase</h2>
+              <p className="big-metric-description">in conversion rate delivered</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
